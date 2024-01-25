@@ -3,7 +3,7 @@
 struct PlayerCameraMarker;
 
 #[derive(bevy::ecs::component::Component)]
-struct MeshObject;
+struct CenterMarker;
 
 fn move_camera(
     time: bevy::ecs::system::Res<bevy::time::Time>,
@@ -65,7 +65,7 @@ fn create_spot(
             )),
             ..bevy::utils::default()
         },
-        MeshObject,
+        CenterMarker,
     ));
 }
 
