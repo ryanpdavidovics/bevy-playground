@@ -5,10 +5,6 @@ struct PlayerCameraMarker;
 #[derive(bevy::ecs::component::Component)]
 struct MeshObject;
 
-// Example of resource
-#[derive(bevy::ecs::system::Resource)]
-struct GreetTimer(bevy::time::Timer);
-
 fn move_camera(
     time: bevy::ecs::system::Res<bevy::time::Time>,
     key: bevy::ecs::system::Res<bevy::input::Input<bevy::input::keyboard::KeyCode>>,
@@ -47,37 +43,7 @@ fn setup_camera(mut commands: bevy::ecs::system::Commands) {
     ));
 }
 
-fn setup_background(
-    mut commands: bevy::ecs::system::Commands,
-    asset_server: bevy::ecs::system::ResMut<bevy::asset::AssetServer>,
-    mut meshes: bevy::ecs::system::ResMut<bevy::asset::Assets<bevy::render::mesh::Mesh>>,
-    // mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    let sampler_desc = bevy::render::texture::ImageSamplerDescriptor {
-        address_mode_u: bevy::render::texture::ImageAddressMode::Repeat,
-        address_mode_v: bevy::render::texture::ImageAddressMode::Repeat,
-        ..Default::default()
-    };
-
-    let settings = move |s: &mut bevy::render::texture::ImageLoaderSettings| {
-        s.sampler = bevy::render::texture::ImageSampler::Descriptor(sampler_desc.clone());
-    };
-
-    // let texture_handle = asset_server.load_with_settings("background.png", settings);
-    commands.spawn(bevy::sprite::SpriteBundle {
-        // material: materials.add(texture_handle.into()),
-        sprite: bevy::sprite::Sprite {
-            rect: Some(bevy::math::Rect::new(
-                -100000.0, -100000.0, 100000.0, 100000.0,
-            )),
-            ..bevy::sprite::Sprite::default()
-        },
-        texture: asset_server.load_with_settings("background.png", settings),
-        ..bevy::sprite::SpriteBundle::default()
-    });
-}
-
-fn setup_grid(
+fn create_spot(
     mut commands: bevy::ecs::system::Commands,
     mut meshes: bevy::ecs::system::ResMut<bevy::asset::Assets<bevy::render::mesh::Mesh>>,
     mut materials: bevy::ecs::system::ResMut<bevy::asset::Assets<bevy::sprite::ColorMaterial>>,
@@ -108,12 +74,9 @@ pub struct HelpMePlugin;
 
 impl bevy::app::Plugin for HelpMePlugin {
     fn build(&self, app: &mut bevy::app::App) {
-        app.insert_resource(GreetTimer(bevy::time::Timer::from_seconds(
-            2.0,
-            bevy::time::TimerMode::Repeating,
-        )))
-        .add_systems(bevy::app::Startup, (setup_background, setup_grid))
-        .add_systems(bevy::app::Update, (move_camera,));
+        app.add_systems(bevy::app::PreStartup, setup_camera)
+            .add_systems(bevy::app::Startup, (create_spot,))
+            .add_systems(bevy::app::Update, (move_camera,));
     }
 }
 
@@ -123,8 +86,5 @@ fn main() {
             bevy::render::color::Color::rgb(0.1, 0.0, 0.2),
         ))
         .add_plugins((bevy::DefaultPlugins, HelpMePlugin))
-        .add_systems(bevy::app::PreStartup, setup_camera)
-        // .add_systems(bevy::app::Startup, add_people)
-        // .add_systems(bevy::app::Update, (initial_cli_greeting, greet_people))
         .run();
 }
